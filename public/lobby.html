@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lobby</title>
+  </head>
+  <body>
+    <h1>Lobby</h1>
+    <div id="chatContainer"></div>
+    <input type="text" id="chatInput" placeholder="input message" />
+    <button onclick="sendChat()">Send</button>
+    <button onclick="sendLogout()">Logout</button>
+    <h2>Create Room</h2>
+    <input type="text" id="roomName" placeholder="Enter room name" />
+    <button onclick="createRoom()">Create</button>
+
+    <h2>Room List</h2>
+    <div id="roomListContainer"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      socket.emit('joinLobby', localStorage.getItem('nickname'));
+
+      socket.on('lobbyChat', (data) => {
+        console.log('🚀 ~ file: lobby.html:19 ~ socket.on ~ data:', data);
+
+        const { nickname, message } = data;
+
+        console.log('🚀 ~ file: lobby.html:23 ~ socket.on ~ message:', message);
+
+        const chatContainer = document.getElementById('chatContainer');
+        const chatItem = document.createElement('p');
+        chatItem.textContent = `${nickname}: ${message}`;
+        chatContainer.appendChild(chatItem);
+
+        console.log(
+          '🚀 ~ file: lobby.html:31 ~ socket.on ~ chatItem:',
+          chatItem
+        );
+      });
+
+      function sendChat() {
+        const message = document.getElementById('chatInput').value;
+
+        console.log('🚀 ~ file: lobby.html:39 ~ sendChat ~ message:', message);
+
+        socket.emit('lobbyChat', {
+          nickname: localStorage.getItem('nickname'),
+          message: message,
+        });
+        document.getElementById('chatInput').value = '';
+      }
+
+      async function sendLogout() {
+        try {
+          const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          if (response.ok) {
+            localStorage.removeItem('nickname');
+            window.location.href = '/';
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      async function findRecentChats() {
+        try {
+          const response = await fetch('/api/chat/lobby', {
+            method: 'GET',
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+
+            console.log(
+              '🚀 ~ file: lobby.html:75 ~ findRecentChats ~ data:',
+              data
+            );
+
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = ''; // 기존 채팅 내용 삭제
+
+            for (const chat of data) {
+              console.log(
+                '🚀 ~ file: lobby.html:85 ~ findRecentChats ~ chat:',
+                chat
+              );
+
+              const { userNickname, chatLog } = chat;
+
+              console.log(
+                '🚀 ~ file: lobby.html:86 ~ findRecentChats ~ chatLog:',
+                chatLog
+              );
+
+              const chatItem = document.createElement('p');
+              chatItem.textContent = `${userNickname}: ${chatLog}`;
+              chatContainer.appendChild(chatItem);
+            }
+          } else {
+            throw new Error('채팅 가져오기 실패');
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      findRecentChats();
+
+      async function createRoom() {
+        const roomName = document.getElementById('roomName').value;
+
+        const data = {
+          nickname: localStorage.getItem('nickname'),
+          roomName,
+        };
+
+        try {
+          const response = await fetch('/api/rooms', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+          if (response.ok) {
+            const result = await response.json();
+            console.log('🚀 ~ file: index.html:38 ~ .then ~ result:', result);
+          } else {
+            throw new Error('방 만들기 실패');
+          }
+        } catch (error) {
+          console.log('🚀 ~ file: lobby.html:121 ~ createRoom ~ error:', error);
+        }
+      }
+
+      async function getRoomList() {
+        try {
+          const response = await fetch('/api/rooms', {
+            method: 'GET',
+          });
+          if (response.ok) {
+            const rooms = await response.json();
+            renderRoomList(rooms);
+          } else {
+            throw new Error('Failed to fetch room list');
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      function renderRoomList(rooms) {
+        const roomListContainer = document.getElementById('roomListContainer');
+        roomListContainer.innerHTML = '';
+
+        for (const room of rooms) {
+          const roomItem = document.createElement('p');
+          roomItem.textContent = room.roomName;
+          roomItem.addEventListener('click', () => {
+            enterRoom(room.roomId);
+          });
+          roomListContainer.appendChild(roomItem);
+        }
+      }
+
+      getRoomList();
+    </script>
+  </body>
+</html>

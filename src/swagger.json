@@ -1,0 +1,102 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "사용자 인증 API",
+    "description": "사용자 인증과 관련된 API 문서"
+  },
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "API to manage Auth"
+    }
+  ],
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "회원가입",
+        "description": "사용자를 회원으로 등록합니다.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nickname": {
+                  "type": "string",
+                  "description": "사용자 닉네임"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "사용자 비밀번호, 5글자 이상/특수문자 1글자 이상"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "회원가입 성공"
+          },
+          "500": {
+            "description": "회원가입 실패"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "로그인",
+        "description": "사용자를 로그인합니다.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nickname": {
+                  "type": "string",
+                  "description": "사용자 닉네임"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "사용자 비밀번호, 5글자 이상/특수문자 1글자 이상"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "로그인 성공"
+          },
+          "500": {
+            "description": "로그인 실패"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "로그아웃",
+        "description": "사용자를 로그아웃합니다.",
+        "responses": {
+          "201": {
+            "description": "로그아웃 성공"
+          },
+          "500": {
+            "description": "로그아웃 실패"
+          }
+        }
+      }
+    }
+  }
+}

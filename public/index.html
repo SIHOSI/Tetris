@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login</title>
+  </head>
+  <body>
+    <h1>Login</h1>
+    <input type="text" id="nickname" placeholder="Nickname" required /><br />
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+      required
+    /><br />
+    <button onclick="login()">Login</button>
+    <p>계정이 없나요? <a href="/signup.html">Sign up</a></p>
+
+    <script>
+      async function login() {
+        const nickname = document.getElementById('nickname').value;
+        const password = document.getElementById('password').value;
+
+        const data = {
+          nickname: nickname,
+          password: password,
+        };
+
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log('🚀 ~ file: index.html:38 ~ .then ~ result:', result);
+
+            // console.log(nickname);
+            localStorage.setItem('nickname', result.userNickname);
+
+            // 로비로 이동
+            window.location.href = './lobby.html';
+          } else {
+            throw new Error('로그인 실패');
+          }
+        } catch (error) {
+          // 로그인 실패 시 처리
+          console.error(error);
+        }
+      }
+    </script>
+  </body>
+</html>
